@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import os
 import argparse
 from dotenv import load_dotenv  # For loading environment variables from a .env file
@@ -15,16 +13,17 @@ def main():
     Main function to orchestrate the release note generation process.
     """
     # Load environment variables from a .env file (if present)
-    # This is useful for local development and testing.
-    # In production on a VM, environment variables should be set directly
-    # or fetched from Secret Manager.
     load_dotenv()
 
     # 1. Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description="Generate release notes from a Git repository and Jira."
+        description="Generate release notes from a local Git repository and Jira, with full codebase context."
     )
-    parser.add_argument("--repo-url", required=True, help="URL of the Git repository.")
+    parser.add_argument(
+        "--repo-path",
+        required=True,
+        help="Local file system path to the Git repository.",
+    )
     parser.add_argument("--branch", default="main", help="Branch name (default: main).")
     parser.add_argument(
         "--output-dir",
@@ -59,21 +58,25 @@ def main():
     release_note_generator = ReleaseNoteGenerator()
     output_writer = OutputWriter()
 
-    # 4. Get last diff from repository
-    print(f"Fetching last diff for {args.repo_url} on branch {args.branch}...")
-    diff_text, commit_sha, repo_error = repo_manager.get_last_diff(
-        args.repo_url, args.branch
+    # 4. Get last diff and full codebase content from local repository
+    print(
+        f"Fetching last diff and full codebase content for local repo at {args.repo_path} on branch {args.branch}..."
+    )
+    # Renamed the method call
+    diff_text, commit_sha, all_codebase_content, repo_error = (
+        repo_manager.get_last_diff_and_full_codebase(args.repo_path, args.branch)
     )
 
     if repo_error:
-        print(f"Failed to get diff: {repo_error}")
+        print(f"Failed to get diff or codebase content: {repo_error}")
         return
+
+    # Check if there's any diff, even if codebase content was collected
     if not diff_text:
         print(
-            "No significant diff found or initial commit. Skipping release note generation."
+            "No significant diff found. Generating notes based on full codebase and Jira if available."
         )
-        # Optionally, you might want to generate a very basic note here.
-        return
+        # If no diff, still proceed if we have a codebase and Jira data might be relevant
 
     # 5. Get Jira notes for the diff
     print("Fetching Jira notes...")
@@ -81,13 +84,13 @@ def main():
 
     if not jira_data:
         print("No Jira issues found or accessible for this diff.")
-        # Continue to generate notes, but it might be less detailed
-        # based on diff only.
 
-    # 6. Generate release notes
-    print("Generating release notes using Google Generative AI...")
+    # 6. Generate release notes with enhanced context
+    print(
+        "Generating release notes using Google Generative AI (with full codebase context)..."
+    )
     generated_notes = release_note_generator.generate_release_notes(
-        diff_text, jira_data, commit_sha
+        diff_text, jira_data, commit_sha, all_codebase_content  # Pass the new context
     )
 
     if "Error: Could not generate release notes" in generated_notes:
