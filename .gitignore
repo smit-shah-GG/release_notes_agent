@@ -1,2 +1,8 @@
 run.sh
+venv/
+.env
+*.pyc
+__pycache__/
 
+.aider*
+generated_release_notes

@@ -21,6 +21,7 @@ BRANCH_NAME="master" # Example: 'main' or 'develop'
 # Output directory for the generated release notes
 OUTPUT_DIRECTORY="generated_release_notes"
 # --- End Configuration ---
+JIRA_PROJECT="SCRUM"
 
 echo "--- Starting Release Notes Generation ---"
 echo "Local Repository Path: $LOCAL_REPO_PATH"
@@ -36,6 +37,6 @@ echo "-----------------------------------------"
 # pip install -r requirements.txt
 # python3 main.py --repo-path "$LOCAL_REPO_PATH" --branch "$BRANCH_NAME" --output-dir "$OUTPUT_DIRECTORY"
 
-python3 main.py --repo-path "$LOCAL_REPO_PATH" --branch "$BRANCH_NAME" --output-dir "$OUTPUT_DIRECTORY"
+python3 main.py --repo-path "$LOCAL_REPO_PATH" --branch "$BRANCH_NAME" --output-dir "$OUTPUT_DIRECTORY" --jira-project-key "$JIRA_PROJECT"
 
 echo "--- Release Notes Generation Finished ---"

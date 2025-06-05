@@ -31,6 +31,12 @@ def main():
         help="Directory to save release notes.",
     )
 
+    parser.add_argument(
+        "--jira-project-key",
+        required=True,
+        help="Jira project key to fetch tickets from",
+    )
+
     args = parser.parse_args()
 
     # 2. Get environment variables for credentials
@@ -79,8 +85,8 @@ def main():
         # If no diff, still proceed if we have a codebase and Jira data might be relevant
 
     # 5. Get Jira notes for the diff
-    print("Fetching Jira notes...")
-    jira_data = jira_integrator.get_jira_notes_for_diff(diff_text)
+    print("Fetching Jira notes by project...")
+    jira_data = jira_integrator.get_jira_notes_by_project(args.jira_project_key)
 
     if not jira_data:
         print("No Jira issues found or accessible for this diff.")

@@ -55,28 +55,31 @@ class JiraIntegrator:
         matches = re.findall(jira_key_pattern, text)
         return set(matches)
 
-    def get_jira_notes_for_diff(self, diff_text: str) -> list[dict]:
+    def get_jira_notes_by_project(
+        self, project_key: str, max_results: int = 50
+    ) -> list[dict]:
         """
-        Parses the diff text for Jira issue keys and fetches details for each.
+        Fetches all Jira issues for a specific project.
 
         Args:
-            diff_text (str): The content of the code diff.
+            project_key (str): The project key to fetch issues for
+            max_results (int): Maximum number of issues to return
 
         Returns:
-            list[dict]: A list of dictionaries, where each dictionary
-                        contains details of a Jira issue. Returns empty list on error or no issues.
+            list[dict]: A list of Jira issue details
         """
         if not self.jira_client:
             print("Jira client not initialized. Cannot fetch issues.")
             return []
 
-        jira_keys = self._extract_jira_keys(diff_text)
-        print(f"Found potential Jira keys: {jira_keys}")
+        try:
+            # Search for all issues in the project
+            jql = f'project = "{project_key}" ORDER BY created DESC'
+            issues = self.jira_client.search_issues(jql, maxResults=max_results)
+            print(f"Found {len(issues)} issues for project {project_key}")
 
-        jira_issues_data = []
-        for key in jira_keys:
-            try:
-                issue = self.jira_client.issue(key)
+            jira_issues_data = []
+            for issue in issues:
                 jira_issues_data.append(
                     {
                         "key": issue.key,
@@ -110,15 +113,12 @@ class JiraIntegrator:
                         ),
                         "created": issue.fields.created,
                         "updated": issue.fields.updated,
-                        # Add more fields as needed, e.g., custom fields.
-                        # Example for custom field (replace customfield_XXXXX with your actual ID):
-                        # 'custom_feature_flag': issue.fields.customfield_10001 if hasattr(issue.fields, 'customfield_10001') else None
                     }
                 )
-                print(f"Fetched details for Jira issue: {issue.key}")
-            except Exception as e:
-                print(f"Could not retrieve Jira issue {key}: {e}")
-        return jira_issues_data
+            return jira_issues_data
+        except Exception as e:
+            print(f"Error fetching issues for project {project_key}: {e}")
+            return []
 
 
 if __name__ == "__main__":
