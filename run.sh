@@ -6,7 +6,7 @@
 export GEMINI_API_KEY="AIzaSyBfdlA9vIDy698izYeygOfP9ZR-vzBcqso"
 export JIRA_SERVER_URL="https://a2j.atlassian.net"
 export JIRA_USER_EMAIL="smit@solvendo.io"
-export JIRA_API_TOKEN="ATATT3xFfGF0tG3PvtdlxVFiq5V3N5rQlpZgGm2Kh-JimR3wlZZ7xRDVbGgC1Sbyg0vAXYSeTlRcE2jsfhlEz_8bKkt8hJtOkxfPMhT7HOKVL8M-hoYcTx3bqQqwuCazEQ7rlV5HomlfqDRUUN_f_TSU6ruV2wz-eNoNNJ1v-qCdwcaXJsKopHI=B693F184"
+export JIRA_API_TOKEN="ATATT3xFfGF0-r2OwoOVjmltXQbEwHuvVxtJxWakyxUj49_V2kYFQ9IysekYgD1-iW5YQabMqgcdUJsKPdI0SfAkJX4TyUGh_OmjkR3IgHUWqu3IExvqMZlaf28I6U_j2wHe2YFs-OcQR4Fr48C8opKmf6CtTzAPXteievUoG01WHPTsiKDIjR0=243B7C3E"
 export TEAMS_WEBHOOK_URL="https://netorgft7210864.webhook.office.com/webhookb2/ffb3974f-22c8-40e8-a9de-588905d8b944@1808c860-1a96-4640-8ce1-635eca00c108/IncomingWebhook/4d6d34d510c64ca8a139dc87f53cfd07/2adf894c-c9f4-41db-bb3f-4635b01e7498/V2tcgQ1F9yeHkInjVwZm6P8NbbL7Q3VNUmCkxzL_r6wm81"
 
 # Navigate to the script's directory
