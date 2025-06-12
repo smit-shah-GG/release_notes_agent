@@ -4,9 +4,9 @@
 # Ensure you have set the following environment variables in your shell
 # or in a `.env` file that main.py can load:
 export GEMINI_API_KEY="AIzaSyBfdlA9vIDy698izYeygOfP9ZR-vzBcqso"
-export JIRA_SERVER_URL="https://smitshah.atlassian.net"
-export JIRA_USER_EMAIL="johannschmidt045@gmail.com"
-export JIRA_API_TOKEN="ATATT3xFfGF0ikVCxEfO4FzXzu_1GMa7wIgrBOcNt_pSHlvfAp3UUJdICfktinaaWqhv2UKqFDCeyHg6tMiY57crpyvqUtI15lU8c1ZOb_1l3niip-XAqdeqvDsg23b2EWovk89_66fRwQ74JxAzsvWRlh8oVktUZQOgSHkTuSoeRWagRI1rml0=9294B579"
+export JIRA_SERVER_URL="https://a2j.atlassian.net"
+export JIRA_USER_EMAIL="smit@solvendo.io"
+export JIRA_API_TOKEN="ATATT3xFfGF0tG3PvtdlxVFiq5V3N5rQlpZgGm2Kh-JimR3wlZZ7xRDVbGgC1Sbyg0vAXYSeTlRcE2jsfhlEz_8bKkt8hJtOkxfPMhT7HOKVL8M-hoYcTx3bqQqwuCazEQ7rlV5HomlfqDRUUN_f_TSU6ruV2wz-eNoNNJ1v-qCdwcaXJsKopHI=B693F184"
 export TEAMS_WEBHOOK_URL="https://netorgft7210864.webhook.office.com/webhookb2/ffb3974f-22c8-40e8-a9de-588905d8b944@1808c860-1a96-4640-8ce1-635eca00c108/IncomingWebhook/4d6d34d510c64ca8a139dc87f53cfd07/2adf894c-c9f4-41db-bb3f-4635b01e7498/V2tcgQ1F9yeHkInjVwZm6P8NbbL7Q3VNUmCkxzL_r6wm81"
 
 # Navigate to the script's directory
@@ -16,13 +16,13 @@ cd "$SCRIPT_DIR" || exit
 # --- Configuration ---
 # IMPORTANT: Replace with the actual LOCAL FILE SYSTEM PATH to your Git repository
 # Example: /home/youruser/my-project-repo
-LOCAL_REPO_PATH="/home/smit/work/solvendo/release_notes_agent/"
+LOCAL_REPO_PATH="/home/smit/work/gerrity/cirp-solvendo-backend-service"
 # Replace with the branch you want to get the diff from
 BRANCH_NAME="master" # Example: 'main' or 'develop'
 # Output directory for the generated release notes
 OUTPUT_DIRECTORY="generated_release_notes"
 # --- End Configuration ---
-JIRA_PROJECT="SCRUM"
+JIRA_PROJECT="CIRP"
 
 echo "--- Starting Release Notes Generation ---"
 echo "Local Repository Path: $LOCAL_REPO_PATH"
