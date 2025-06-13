@@ -8,105 +8,57 @@ import os
 class RepoManager:
     """
     Manages Git repository operations on a local repository.
-    It now also extracts the full content of ALL text files in the codebase.
+    Manages Git repository operations on a local repository.
+    It primarily extracts the diff from the last commit.
     """
 
-    MAX_TOTAL_CODE_CONTEXT_LENGTH = 500000
-
-    def _get_all_text_file_contents(self, repo_path: str) -> dict:
-        """
-        Recursively reads the content of all text files in the repository.
-        """
-        all_files_content = {}
-        current_total_length = 0
-        print("Collecting full codebase content (text files only)...")
-        for root, _, files in os.walk(repo_path):
-            if ".git" in root:
-                continue
-            for file in files:
-                full_file_path = os.path.join(root, file)
-                relative_file_path = os.path.relpath(full_file_path, repo_path)
-                if (
-                    any(
-                        ext in file.lower()
-                        for ext in [
-                            ".exe",
-                            ".dll",
-                            ".zip",
-                            ".tar.gz",
-                            ".bin",
-                            ".jpg",
-                            ".jpeg",
-                            ".png",
-                            ".gif",
-                            ".bmp",
-                            ".pdf",
-                            ".docx",
-                            ".xlsx",
-                            ".pptx",
-                            ".sqlite",
-                            ".db",
-                            ".pyc",
-                            ".class",
-                        ]
-                    )
-                    or "node_modules" in relative_file_path
-                    or "venv" in relative_file_path
-                    or "__pycache__" in relative_file_path
-                ):
-                    continue
-                try:
-                    with open(
-                        full_file_path, "r", encoding="utf-8", errors="ignore"
-                    ) as f:
-                        content = f.read()
-                        if (
-                            current_total_length + len(content)
-                            > self.MAX_TOTAL_CODE_CONTEXT_LENGTH
-                        ):
-                            remaining_capacity = (
-                                self.MAX_TOTAL_CODE_CONTEXT_LENGTH
-                                - current_total_length
-                            )
-                            if remaining_capacity > 0:
-                                all_files_content[relative_file_path] = (
-                                    content[:remaining_capacity]
-                                    + "\n... (content truncated)"
-                                )
-                            current_total_length = self.MAX_TOTAL_CODE_CONTEXT_LENGTH
-                            break
-                        else:
-                            all_files_content[relative_file_path] = content
-                            current_total_length += len(content)
-                except Exception as e:
-                    print(f"Error reading file {relative_file_path}: {e}")
-            if current_total_length >= self.MAX_TOTAL_CODE_CONTEXT_LENGTH:
-                break
-        print(
-            f"Collected {len(all_files_content)} files, total content length: {current_total_length} characters."
-        )
-        return all_files_content
-
-    def get_last_diff_and_full_codebase(
+    def get_last_diff_and_commit_info(
         self, repo_path: str, branch_name: str = "main"
-    ) -> tuple[str, str, dict, str]:
+    ) -> tuple[str, str, str]:
         """
-        Opens a local Git repository, gets the last diff, and extracts the full content of all relevant text files.
+        Opens a local Git repository and gets the diff from the last commit and its SHA.
         """
         if not os.path.isdir(os.path.join(repo_path, ".git")):
-            return "", "", {}, f"Error: '{repo_path}' is not a valid Git repository."
+            return "", "", f"Error: '{repo_path}' is not a valid Git repository."
         try:
             repo = git.Repo(repo_path)
-            if repo.head.is_valid() and repo.head.ref.name != branch_name:
-                repo.git.checkout(branch_name)
+            if repo.is_dirty(untracked_files=True):
+                # Handle or log dirty repository state if necessary, for now, we proceed
+                print(f"Warning: Repository at {repo_path} is dirty. Proceeding with diff operation.")
 
+            # Ensure the correct branch is checked out if specified and different from current
+            if repo.head.is_valid() and repo.active_branch.name != branch_name:
+                print(f"Checking out branch '{branch_name}'...")
+                # Ensure there's a local branch corresponding to branch_name
+                if branch_name in repo.heads:
+                    repo.heads[branch_name].checkout()
+                else: # Try to checkout remote branch if local doesn't exist
+                    try:
+                        repo.git.checkout(branch_name)
+                    except git.exc.GitCommandError as e:
+                         return "", "", f"Error checking out branch '{branch_name}': {e}. Ensure it exists locally or remotely."
+
+
+            if not repo.head.is_valid():
+                return "", "", "Error: Repository head is not valid."
+            
             last_commit = repo.head.commit
-            second_to_last_commit = repo.commit(f"{last_commit.hexsha}~1")
-            diff_text = repo.git.diff(second_to_last_commit, last_commit)
-            all_codebase_content = self._get_all_text_file_contents(repo_path)
-            return (diff_text, last_commit.hexsha, all_codebase_content, "")
+            if not last_commit.parents:
+                # This is the initial commit, no parent to diff against
+                # We can return the state of the tree at this commit as a diff against an empty tree
+                print("Initial commit detected. Diffing against an empty tree.")
+                diff_text = repo.git.diff(git.NULL_TREE, last_commit)
+            else:
+                second_to_last_commit = last_commit.parents[0] # Diff against the first parent
+                diff_text = repo.git.diff(second_to_last_commit, last_commit)
+            
+            return (diff_text, last_commit.hexsha, "")
+        except git.exc.NoSuchPathError:
+            return "", "", f"Error: Path '{repo_path}' does not exist or is not a Git repository."
+        except git.exc.InvalidGitRepositoryError:
+            return "", "", f"Error: '{repo_path}' is not a valid Git repository."
         except Exception as e:
-            return "", "", {}, f"An unexpected error occurred during Git operation: {e}"
+            return "", "", f"An unexpected error occurred during Git operation: {e}"
 
 
 # Instantiate the manager to be used by the tool.
@@ -115,27 +67,24 @@ _repo_manager = RepoManager()
 
 def get_repository_context(repo_path: str, branch: str) -> dict:
     """
-    Provides the full context of the most recent changes in a Git repository.
-    This includes the code diff from the last commit, the commit's unique identifier (SHA),
-    and the complete content of all text files in the codebase.
+    Provides the diff from the last commit and the commit's SHA for a Git repository.
 
     Args:
         repo_path: The local file system path to the Git repository.
         branch: The name of the branch to analyze (e.g., 'main', 'develop').
 
     Returns:
-        A dictionary containing 'diff_text', 'commit_sha', 'codebase_content', and 'error'.
+        A dictionary containing 'diff_text', 'commit_sha', and 'error'.
         The 'error' key will be empty on success.
     """
     print(
         f"Tool 'get_repository_context' called for repo: {repo_path} on branch: {branch}"
     )
-    diff_text, commit_sha, all_codebase_content, error = (
-        _repo_manager.get_last_diff_and_full_codebase(repo_path, branch)
+    diff_text, commit_sha, error = (
+        _repo_manager.get_last_diff_and_commit_info(repo_path, branch)
     )
     return {
         "diff_text": diff_text,
         "commit_sha": commit_sha,
-        "codebase_content": all_codebase_content,
         "error": error,
     }
