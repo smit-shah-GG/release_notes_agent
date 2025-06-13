@@ -1,0 +1,10 @@
+google-generativeai
+google-adk
+
+GitPython==3.1.43
+
+jira==3.8.0
+
+pymsteams==0.2.2
+
+python-dotenv==1.0.1
