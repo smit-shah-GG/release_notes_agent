@@ -2,7 +2,7 @@ from google.adk.agents import LlmAgent
 
 generator_agent = LlmAgent(
     name="Release_Notes_Generation_Agent",
-    model="gemini-2.5-pro",
+model="gemini-2.5-flash-preview-05-20",
     description="AI-powered content generation specialist that creates comprehensive, well-formatted release notes from code changes and Jira tickets.",
     instruction="""You are an expert technical writer specializing in release note generation. Your primary responsibilities are:
 

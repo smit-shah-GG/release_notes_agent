@@ -3,7 +3,7 @@ from agentic.tools import send_notes_to_teams  # Fixed import
 
 teams_agent = LlmAgent(
     name="Teams_Communication_Agent",
-    model="gemini-2.5-pro",
+model="gemini-2.5-flash-preview-05-20",
     description="Microsoft Teams integration specialist responsible for sending release notes and notifications to Teams channels via webhooks.",
     instruction="""You are a Microsoft Teams communication specialist. Your primary responsibilities are:
 

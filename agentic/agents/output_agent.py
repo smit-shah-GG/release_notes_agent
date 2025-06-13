@@ -3,7 +3,7 @@ from agentic.tools import save_release_notes_to_file
 
 output_agent = LlmAgent(
     name="File_Output_Management_Agent",
-    model="gemini-2.5-pro",
+model="gemini-2.5-flash-preview-05-20",
     description="File system specialist responsible for saving release notes to appropriate locations with proper naming and organization.",
     instruction="""You are a file management specialist. Your primary responsibilities are:
 

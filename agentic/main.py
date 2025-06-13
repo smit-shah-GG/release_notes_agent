@@ -76,7 +76,7 @@ def run_single_command(args):
     if args.send_to_teams:
         print("📢 Will send to Teams after generation")
 
-    # Create the prompt for the orchestrator
+    # Create the prompt for the orchestrator with ALL needed information
     user_request = f"""
     Please generate comprehensive release notes with the following specifications:
 
@@ -88,17 +88,18 @@ def run_single_command(args):
     - Project Key: {args.jira_project_key}
     - Server URL: {config.jira_server_url}
     - User Email: {config.jira_user_email}
+    - API Token: {config.jira_api_token}
 
     Output Requirements:
     - Save to directory: {args.output_dir}
-    {"- Send to Microsoft Teams channel after saving" if args.send_to_teams else ""}
+    {"- Send to Microsoft Teams with webhook: " + config.teams_webhook_url if args.send_to_teams else ""}
 
     Please coordinate with your specialized agents to:
-    1. Analyze the repository and get the latest changes
-    2. Fetch relevant Jira tickets for the project
-    3. Generate comprehensive release notes
-    4. Save the release notes to the specified directory
-    {"5. Send the release notes to the Teams channel" if args.send_to_teams else ""}
+    1. Repository Agent: Use get_repository_context tool with repo_path="{args.repo_path}" and branch="{args.branch}"
+    2. Jira Agent: Use get_jira_tickets tool with project_key="{args.jira_project_key}", jira_server_url="{config.jira_server_url}", jira_user_email="{config.jira_user_email}", jira_api_token="{config.jira_api_token}"
+    3. Generator Agent: Create release notes from the collected data
+    4. Output Agent: Save to directory "{args.output_dir}"
+    {"5. Teams Agent: Send to webhook URL" if args.send_to_teams else ""}
     """
 
     print("\n🤖 Coordinating with specialized agents...")
