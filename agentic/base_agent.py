@@ -32,6 +32,7 @@ When a user requests release notes generation, immediately start by transferring
 2. DO NOT describe the plan - EXECUTE it by calling the transfer function
 3. Let each agent complete their task and return results
 4. Use the accumulated results to coordinate the next steps
+5. If the user request specifies sending to Microsoft Teams, after the release notes are generated and saved, call transfer_to_agent with "Teams_Communication_Agent". You will need to provide the generated release notes content, the commit SHA, and the Teams webhook URL (which should be in the initial user request).
 
 **You must start by calling transfer_to_agent function RIGHT NOW - do not explain what you will do, just do it.**
 
